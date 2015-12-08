@@ -88,24 +88,35 @@ void IRsend::begin()
 	pinMode(IRpin, OUTPUT);
 }
 
-void IRsend::sendNEC(unsigned long data, int nbits)
+void IRsend::sendNEC(unsigned long data, int nbits, int nrepeats)
 {
   enableIROut(38);
+  uint32_t totalTime = NEC_HDR_MARK + NEC_HDR_SPACE + NEC_BIT_MARK * (nbits + 1);
   mark(NEC_HDR_MARK);
   space(NEC_HDR_SPACE);
   for (int i = 0; i < nbits; i++) {
     if (data & TOPBIT) {
       mark(NEC_BIT_MARK);
       space(NEC_ONE_SPACE);
+      totalTime += NEC_ONE_SPACE;
     } 
     else {
       mark(NEC_BIT_MARK);
       space(NEC_ZERO_SPACE);
+      totalTime += NEC_ZERO_SPACE;
     }
     data <<= 1;
   }
   mark(NEC_BIT_MARK);
   space(0);
+  for (int rptnum = 0; rptnum < nrepeats; ++rptnum) {
+    space(NEC_RPT_WAIT - totalTime);
+    mark(NEC_HDR_MARK);
+    space(NEC_RPT_SPACE);
+    mark(NEC_BIT_MARK);
+    space(0);
+    totalTime = NEC_HDR_MARK + NEC_RPT_SPACE + NEC_BIT_MARK;
+  }
 }
 
 void IRsend::sendLG (unsigned long data, int nbits)
