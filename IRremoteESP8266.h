@@ -124,7 +124,7 @@ public:
   IRsend(int IRsendPin);
   void begin();
   void sendWhynter(unsigned long data, int nbits);
-  void sendNEC(unsigned long data, int nbits);
+  void sendNEC(unsigned long data, int nbits, int nrepeats = 0);
   void sendLG(unsigned long data, int nbits);
   void sendSony(unsigned long data, int nbits);
   // Neither Sanyo nor Mitsubishi send is implemented yet
