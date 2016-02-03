@@ -119,6 +119,29 @@ void IRsend::sendNEC(unsigned long data, int nbits, int nrepeats)
   }
 }
 
+void IRsend::sendDyson(unsigned long data, int nbits)
+{
+  enableIROut(38);
+  uint32_t totalTime = DYSON_HDR_MARK + DYSON_HDR_SPACE + DYSON_BIT_MARK * (nbits + 1);
+  mark(DYSON_HDR_MARK);
+  space(DYSON_HDR_SPACE);
+  for (int i = 0; i < nbits; i++) {
+    if (data & TOPBIT) {
+      mark(DYSON_BIT_MARK);
+      space(DYSON_ONE_SPACE);
+      totalTime += DYSON_ONE_SPACE;
+    } 
+    else {
+      mark(DYSON_BIT_MARK);
+      space(DYSON_ZERO_SPACE);
+      totalTime += DYSON_ZERO_SPACE;
+    }
+    data <<= 1;
+  }
+  mark(DYSON_BIT_MARK);
+  space(0);
+}
+
 void IRsend::sendLG (unsigned long data, int nbits)
 {
 	enableIROut(38);
@@ -512,6 +535,13 @@ int IRrecv::decode(decode_results *results) {
   }
 
 #ifdef DEBUG
+  Serial.println("Attempting Dyson decode");
+#endif
+  if (decodeDyson(results)) {
+    return DECODED;
+  }
+
+#ifdef DEBUG
   Serial.println("Attempting Sony decode");
 #endif
   if (decodeSony(results)) {
@@ -629,6 +659,45 @@ long IRrecv::decodeNEC(decode_results *results) {
   results->bits = NEC_BITS;
   results->value = data;
   results->decode_type = NEC;
+  return DECODED;
+}
+
+long IRrecv::decodeDyson(decode_results *results) {
+  long data = 0;
+  int offset = 1; // Skip initial space
+  // Initial mark
+  if (!MATCH_MARK(results->rawbuf[offset], DYSON_HDR_MARK)) {
+    return ERR;
+  }
+  offset++;
+  if (irparams.rawlen < 2 * DYSON_BITS + 3) {
+    return ERR;
+  }
+  // Initial space  
+  if (!MATCH_SPACE(results->rawbuf[offset], DYSON_HDR_SPACE)) {
+    return ERR;
+  }
+  offset++;
+  for (int i = 0; i < NEC_BITS; i++) {
+    if (!MATCH_MARK(results->rawbuf[offset], DYSON_BIT_MARK)) {
+      return ERR;
+    }
+    offset++;
+    if (MATCH_SPACE(results->rawbuf[offset], DYSON_ONE_SPACE)) {
+      data = (data << 1) | 1;
+    } 
+    else if (MATCH_SPACE(results->rawbuf[offset], DYSON_ZERO_SPACE)) {
+      data <<= 1;
+    } 
+    else {
+      return ERR;
+    }
+    offset++;
+  }
+  // Success
+  results->bits = DYSON_BITS;
+  results->value = data;
+  results->decode_type = DYSON;
   return DECODED;
 }
 

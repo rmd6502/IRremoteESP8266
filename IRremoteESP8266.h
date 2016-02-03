@@ -24,6 +24,7 @@
 
 #ifndef IRremote_h
 #define IRremote_h
+#include <Arduino.h>
 
 // The following are compile-time library options.
 // If you change them, recompile the library.
@@ -48,8 +49,18 @@ enum decode_type_t {
   LG = 12,
   WHYNTER = 13,
   AIWA_RC_T501 = 14,
+  DYSON = 15,
+  NUM_DECODE_TYPES,
 
   UNKNOWN = -1
+};
+
+const String decode_names[] {
+    "UNKNOWN",
+    "NEC", "SONY", "RC5", "RC6", "DISH", "SHARP",
+    "PANASONIC", "JVC", "SANYO", "MITSUBISHI",
+    "SAMSUNG", "LG", "WHYNTER", "AIWA_RC_T501", 
+    "DYSON"
 };
 
 // Results returned from the decoder
@@ -80,6 +91,7 @@ public:
 #define SAMSUNG 11
 #define LG 12
 #define WHYNTER 13
+#define DYSON 15
 #define UNKNOWN -1
 
 // Decoded value for NEC when a repeat code is received
@@ -108,6 +120,7 @@ public:
   long decodeJVC(decode_results *results);
   long decodeSAMSUNG(decode_results *results);
   long decodeWhynter(decode_results *results);
+  long decodeDyson(decode_results *results);
   long decodeHash(decode_results *results);
   int compare(unsigned int oldval, unsigned int newval);
 };
@@ -125,6 +138,7 @@ public:
   void begin();
   void sendWhynter(unsigned long data, int nbits);
   void sendNEC(unsigned long data, int nbits, int nrepeats = 0);
+  void sendDyson(unsigned long data, int nbits);
   void sendLG(unsigned long data, int nbits);
   void sendSony(unsigned long data, int nbits);
   // Neither Sanyo nor Mitsubishi send is implemented yet

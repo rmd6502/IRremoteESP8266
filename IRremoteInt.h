@@ -134,6 +134,13 @@
 #define SAMSUNG_ZERO_SPACE  590
 #define SAMSUNG_RPT_SPACE 2250
 
+#define DYSON_BITS          15
+#define DYSON_HDR_MARK    2250
+#define DYSON_HDR_SPACE    750
+#define DYSON_BIT_MARK     750
+#define DYSON_ONE_SPACE   1350
+#define DYSON_ZERO_SPACE   750
+
 #define SHARP_BITS 15
 #define DISH_BITS 16
 
